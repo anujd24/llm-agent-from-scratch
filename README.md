@@ -8,7 +8,7 @@
 
 - Runs a tool-calling loop: the model decides which tool to call, the code executes it, 
   the result goes back to the model, repeat until the model has enough info to answer.
-- Supports chaining multiple tool calls in sequence (e.g. fetch weather → convert units) 
+- Supports chaining multiple tool calls in sequence (e.g. fetch weather -> convert units) 
   without any hardcoded logic connecting them, the model decides the sequence itself.
 - Reuses conversation history intelligently and it won't re-fetch data it already has from 
   earlier in the same session.
