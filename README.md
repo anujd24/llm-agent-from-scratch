@@ -31,9 +31,10 @@ registry entry in sync by hand.
 
 ## Project structure
 
-- tools.py — tool functions + the @tool decorator that auto-registers them
-- agent.py — the generic tool-calling loop
-- main.py — binds everything together (entry point)
+- tools.py - tool functions + the @tool decorator that auto-registers them
+- agent.py - the generic tool-calling loop
+- main.py - binds everything together (entry point)
+- memory.py - serialize/deserialize conversation history to/from JSON, for persistence
 
 
 ## Setup
@@ -58,8 +59,29 @@ Run it:
 python main.py
 ```
 
+## Persistent Memory across Sessions
+
+The agent doesn't forget when the program exits. Conversation history includes
+every tool call and result which is saved to `history.json` after each run, and loaded 
+back in on the next run, so the agent has real context from previous sessions, not 
+just within a single run.
+
+```python
+if os.path.exists("history.json"):
+    initial_history = load_history("history.json")
+else:
+    initial_history = []
+
+chat = client.chats.create(model=..., history=initial_history, ...)
+```
+
+Confirmed working: after saving a session where the agent looked up Delhi's weather, 
+a fresh run correctly answered a follow-up question about that weather *without* 
+re-calling the tool which is the proof that the loaded history is actually being used by the model, 
+not just sitting there unused.
+
 ## What's next
 
-- Memory across sessions (currently only remembers within a single run)
 - A RAG tool for retrieval-augmented answers
+- History will grow unbounded across sessions right now (needs summarization/truncation)
 - More robust error handling around tool execution
