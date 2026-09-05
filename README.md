@@ -35,6 +35,7 @@ registry entry in sync by hand.
 - agent.py - the generic tool-calling loop
 - main.py - binds everything together (entry point)
 - memory.py - serialize/deserialize conversation history to/from JSON, for persistence
+- rag.py - embeddings, cosine similarity, and retrieval over a small knowledge base
 
 
 ## Setup
@@ -80,8 +81,27 @@ a fresh run correctly answered a follow-up question about that weather *without*
 re-calling the tool which is the proof that the loaded history is actually being used by the model, 
 not just sitting there unused.
 
+## Retrieval-augmented answers (RAG)
+
+The agent can answer questions using a small personal knowledge base, not just its 
+training data or tool calls to external APIs. Built from scratch that means no vector DB library, 
+no LangChain retriever:
+
+- Each knowledge entry gets embedded via Gemini's `embed_content` API
+- A hand-written cosine similarity function ranks stored entries against a query's 
+  embedding
+- The best-matching entry is returned as a tool result, same pattern as any other tool
+
+## Current limitations
+
+- Knowledge base is a small, hardcoded list, no ingestion pipeline for real 
+  documents yet
+- Conversation history in `history.json` grows unbounded across sessions
+- No automated evaluation of tool-selection or answer accuracy yet
+
 ## What's next
 
-- A RAG tool for retrieval-augmented answers
-- History will grow unbounded across sessions right now (needs summarization/truncation)
-- More robust error handling around tool execution
+- An eval suite in this same repo which is a set of test cases checking whether the right 
+  tool gets called and the answer is correct, not just "it runs"
+- Truncation for growing conversation history
+- A real vector store, if the knowledge base grows past a handful of entries

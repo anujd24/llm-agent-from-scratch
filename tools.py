@@ -1,3 +1,5 @@
+from rag import retrieve, store
+
 
 PY_TYPE_TO_JSON = {
     str : "string",
@@ -47,5 +49,10 @@ def cel_to_far(celsius : float) -> float:
 @tool(description="add two numbers")
 def add_numbers(a:float, b:float) -> float:
     return a + b
+
+@tool(description="search Anuj's personal knowledge base for relevant information")
+def search_knowledge(query : str) -> str:
+    text, score = retrieve(query, store)
+    return text
 
 # print(get_weather.__annotations__)

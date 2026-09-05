@@ -23,6 +23,7 @@ chat = client.chats.create(
 
 
 print(run_agent(chat, "what was the weather I asked about earlier?"))
+print(run_agent(chat, "what technologies were used at my workplace ?"))
 
 
 # history = chat.get_history()
