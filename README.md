@@ -36,6 +36,7 @@ registry entry in sync by hand.
 - main.py - binds everything together (entry point)
 - memory.py - serialize/deserialize conversation history to/from JSON, for persistence
 - rag.py - embeddings, cosine similarity, and retrieval over a small knowledge base
+- evals.py - automated test suite checking tool-selection correctness
 
 
 ## Setup
@@ -92,16 +93,44 @@ no LangChain retriever:
   embedding
 - The best-matching entry is returned as a tool result, same pattern as any other tool
 
+## Eval suite
+
+Confidence that the agent picks the right tool isn't just assumed but tested too. 
+`evals.py` runs a set of test cases against fresh chat sessions (no shared 
+history between tests, so results are reproducible regardless of prior conversations) 
+and checks whether the expected tools were actually called.
+
+Two levels of checking:
+- **Membership** : for single-tool queries, was the expected tool called at all
+- **Sequence** : for multi-step queries (e.g. "temperature in Fahrenheit" requires 
+  `get_weather` then `cel_to_far`, in that order), a subsequence check confirms the 
+  right tools ran in the right relative order, while still tolerating extra retries 
+  the model sometimes makes on its own (observed happening naturally with 
+  `search_knowledge`)
+
+```python
+def is_subsequence(expected, actual):
+    expected_index = 0
+    for tool in actual:
+        if expected_index < len(expected) and tool == expected[expected_index]:
+            expected_index += 1
+    return expected_index == len(expected)
+```
+
+Run it:
+```bash
+python evals.py
+```
+
 ## Current limitations
 
 - Knowledge base is a small, hardcoded list, no ingestion pipeline for real 
   documents yet
 - Conversation history in `history.json` grows unbounded across sessions
-- No automated evaluation of tool-selection or answer accuracy yet
+- Eval coverage checks tool selection, not answer content/quality
 
 ## What's next
 
-- An eval suite in this same repo which is a set of test cases checking whether the right 
-  tool gets called and the answer is correct, not just "it runs"
+- Broader eval coverage (answer correctness, not just which tool got called)
 - Truncation for growing conversation history
 - A real vector store, if the knowledge base grows past a handful of entries
