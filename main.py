@@ -21,9 +21,13 @@ chat = client.chats.create(
     history = initial_history
 )
 
+answer, tools_called = run_agent(chat, "what was the weather I asked about earlier?")
+print(answer)
+print(tools_called)
 
-print(run_agent(chat, "what was the weather I asked about earlier?"))
-print(run_agent(chat, "what technologies were used at my workplace ?"))
+answer,tools_called = run_agent(chat, "what technologies were used at my workplace ?")
+print(answer)
+print(tools_called)
 
 
 # history = chat.get_history()

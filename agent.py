@@ -2,6 +2,7 @@ from google.genai import types
 from tools import TOOL_IMPLS
 
 def run_agent(chat, user_message: str):
+    data = []
     response = chat.send_message(user_message)
 
     while True:
@@ -16,7 +17,7 @@ def run_agent(chat, user_message: str):
 
         if function_call_part is None:
             # no tool call -> model gave a final text answer -> done
-            return response.text
+            return response.text, data
 
         fc = function_call_part.function_call
         print(f"[agent] calling tool: {fc.name}({fc.args})")
@@ -24,6 +25,7 @@ def run_agent(chat, user_message: str):
         tool_fn = TOOL_IMPLS[fc.name]
         result = tool_fn(**fc.args)   # unpack args dict directly as kwargs
 
+        data.append(fc.name)
         # sending result back into the same chat, then loop again
         response = chat.send_message(
             types.Part(
